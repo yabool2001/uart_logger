@@ -1,16 +1,13 @@
 import serial
-import time
+from datetime import datetime
 import modules.my_serial as my_serial
 
 import sys
-sys.path.append ( "/Users/mzeml/python/sim_nmea_uart/modules/" )
+sys.path.append ( "/Users/mzeml/python/uart_logger/modules/" )
 
 import modules.my_serial as my_serial
 
-#nmea_source_filename = "source/2023.10.01.22.57_L86.txt"
-#nmea_source_filename = "source/2023.10.28.03_L86.bin"
-nmea_source_filename = "source/2023.10.28.04_L86.bin"
-#nmea_source_filename = "source/2023.10.28.04-1_L86.bin"
+log_filename = "logs/2023.12.05.txt"
 
 # Otwórz port szeregowy COM
 com = serial.Serial ()
@@ -26,12 +23,23 @@ my_serial.open_serial_ports ( com )
 #        print ( com.read (1) )
 #        #time.sleep ( 0.1 )
 
-with open ( nmea_source_filename , 'r' ) as f :
-    nmea = f.read ()
-    for c in nmea :
-        com.write ( c.encode() )
-        #print ( com.read (1) )
-#        time.sleep ( 0.1 )
 
+try:
+    while com.is_open :
+        # Odczytanie linii z portu COM
+        line = com.readline ().decode ( 'utf-8' ).rstrip ( '\n' )
 
-my_serial.close_serial_ports ( com )
+        if line:
+            timestamp = datetime.now ().strftime ( '%Y.%m.%d %H:%M:%S:%f' )[:-3]
+
+            # Otwarcie pliku w trybie aktualizacji i zapisanie linii
+            with open ( log_filename , 'a' ) as f:
+                f.write ( f'{timestamp},{line}\n' )
+                f.flush()  # Zapewnienie natychmiastowego zapisu do pliku
+
+except KeyboardInterrupt:
+    print ( 'Przerwano przez użytkownika.' )
+
+finally:
+    # Zamknięcie portu COM
+    my_serial.close_serial_ports ( com )
