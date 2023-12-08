@@ -7,7 +7,9 @@ sys.path.append ( "/Users/mzeml/python/uart_logger/modules/" )
 
 import modules.my_serial as my_serial
 
-log_filename = "logs/2023.12.05.txt"
+# log_filename = "logs/2023.12.05.txt"
+timestamp = datetime.now ().strftime ( '%Y.%m.%d.%H.%M.%S' )
+log_filename = f"logs/{timestamp}.txt"
 
 # Otwórz port szeregowy COM
 com = serial.Serial ()
@@ -23,6 +25,9 @@ my_serial.open_serial_ports ( com )
 #        print ( com.read (1) )
 #        #time.sleep ( 0.1 )
 
+with open ( log_filename , 'w' ) as f:
+    f.write ( f'{timestamp},Otworzenie nowego pliku log.\n' )
+    f.flush()  # Zapewnienie natychmiastowego zapisu do pliku
 
 try:
     while com.is_open :
